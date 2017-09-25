@@ -1,7 +1,7 @@
 /**
  * BEYONDSOFT.COM INC
  */
-package org.liusk.common.utils;
+package org.liusk.weixinpay.common.util;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

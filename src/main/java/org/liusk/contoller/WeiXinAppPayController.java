@@ -7,9 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -30,26 +29,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
+ * 微信app支付处理
  * @author liusk
  * @version $Id: WxController.java, v 0.1 2017/9/22 15:06 liusk Exp $
  */
 @Controller
-@RequestMapping(value = "/WeiXinPay")
-public class WeiXinController {
+@RequestMapping(value = "/WeiXinAppPay")
+public class WeiXinAppPayController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WeiXinController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WeiXinAppPayController.class);
 
     // 微信统一下单接口路径
     private static final String UNIFORMORDER = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 
     // 微信商户号：*****
     private static final String MCHID     = "********";
+    //微信开放平台审核通过的应用APPID
+    private static final String APPID     = "********";
     // 微信回调地址
-    private static final String NOTIFYURL = "*********";
+    private static final String NOTIFYURL = "***/WeiXinAppPay/notify";
     // 微信交易类型
     private static final String TRADETYPE = "APP";
     //微信APIKEY
@@ -67,12 +68,6 @@ public class WeiXinController {
         JSONObject resultObj = new JSONObject();
         request.setCharacterEncoding("UTF-8");
         try {
-            //APP ID
-            String appid = request.getParameter("appid") == null ? null
-                : request.getParameter("appid").trim().toUpperCase();
-            // 用户访问令牌
-            String accessToken = request.getParameter("accessToken") == null ? null
-                : request.getParameter("accessToken").trim();
             // 订单编号
             String orderNum = request.getParameter("orderNum") == null ? null
                 : request.getParameter("orderNum").trim();// 订单编号
@@ -84,7 +79,7 @@ public class WeiXinController {
                 : request.getParameter("subject").trim();// 消费主体
 
             SortedMap<Object, Object> parame = new TreeMap<Object, Object>();
-            parame.put("appid", appid);
+            parame.put("appid", APPID);
             parame.put("mch_id", MCHID);// 商家账号。
             String randomStr = getRandomString(18).toUpperCase();
             parame.put("nonce_str", randomStr);// 随机字符串
@@ -106,24 +101,30 @@ public class WeiXinController {
             String xml = getRequestXML(parame);
 
             String content = HttpUtil.httpPost(UNIFORMORDER, xml);
-            System.out.println(content);
             JSONObject jsonObject = XmltoJsonUtil.documentToJSONObject(content);
-            JSONObject result_xml = jsonObject.getJSONObject("xml");
-            JSONArray result_code = result_xml.getJSONArray("result_code");
-            String code = (String) result_code.get(0);
+            String code = (String) jsonObject.get("result_code");
 
-            List<String> data = new ArrayList<String>();
             if (code.equalsIgnoreCase("FAIL")) {
                 resultObj.put("msg", "微信统一订单下单失败");
                 resultObj.put("code", "-1");
-                resultObj.put("data", data);
+                LOGGER.error("微信支付失败，原因：{}", (String) jsonObject.get("return_msg"));
             } else if (code.equalsIgnoreCase("SUCCESS")) {
-                JSONArray prepay_id = result_xml.getJSONArray("prepay_id");
-                String prepayId = (String) prepay_id.get(0);
-                data.add(prepayId);
+                String prepayId = (String) jsonObject.get("prepay_id");
+                //获取到prepayid后对以下字段进行签名最终发送给app  
+                SortedMap<Object, Object> finalpackage = new TreeMap<Object, Object>();
+                finalpackage.put("appid", APPID);
+                finalpackage.put("timestamp", getTimeStamp());
+                finalpackage.put("noncestr", randomStr);
+                finalpackage.put("partnerid", MCHID);//微信支付分配的商户号
+                finalpackage.put("package", "Sign=WXPay");
+                finalpackage.put("prepayid", prepayId);
+                String finalsign = createSign(finalpackage);
+                finalpackage.put("sign", finalsign);
+
+                //封装返回给前端的数据
                 resultObj.put("msg", "微信统一订单下单成功");
                 resultObj.put("code", "1");
-                resultObj.put("data", data);
+                resultObj.put("data", finalpackage);
             }
             return resultObj.toJSONString();
 
@@ -160,22 +161,23 @@ public class WeiXinController {
             in.close();
             String content = new String(out.toByteArray(), "utf-8");//xml数据
 
+            //获取微信返回的支付结果部分数据
             JSONObject jsonObject = XmltoJsonUtil.documentToJSONObject(content);
-            JSONObject result_xml = jsonObject.getJSONObject("xml");
-            JSONArray result_code = result_xml.getJSONArray("result_code");
-            String code = (String) result_code.get(0);
+            String result_code = (String) jsonObject.get("result_code");
+            //String out_trade_no = (String) jsonObject.get("out_trade_no");
+            //String total_fee = (String) jsonObject.get("total_fee"); //金额（分） 
+            //String transaction_id = (String) jsonObject.get("transaction_id");//微信订单号
 
-            if (code.equalsIgnoreCase("FAIL")) {
+            if (result_code.equalsIgnoreCase("FAIL")) {
                 resultObj.put("msg", "微信统一订单下单失败");
                 resultObj.put("code", "-1");
-
+                //返回给微信处理结果，一般情况下都返回成功
                 response.getWriter().write(setXml("SUCCESS", "OK"));
-
-            } else if (code.equalsIgnoreCase("SUCCESS")) {
+            } else if (result_code.equalsIgnoreCase("SUCCESS")) {
                 resultObj.put("msg", "微信统一订单下单成功");
                 resultObj.put("code", "1");
 
-                // /TODO
+                //TODO
                 //支付成功的操作
 
                 response.getWriter().write(setXml("SUCCESS", "OK"));
@@ -186,7 +188,6 @@ public class WeiXinController {
             resultObj.put("code", "-1");
             return;
         }
-
     }
 
     // 返回用IP地址
@@ -204,6 +205,20 @@ public class WeiXinController {
         return ip;
     }
 
+    /**
+     * 获取时间戳
+     * @return
+     */
+    public String getTimeStamp() {
+        //时间戳
+        Date date = new Date();
+        long time = date.getTime();
+        //mysq 时间戳只有10位 要做处理
+        String timeStamp = time + "";
+        timeStamp = timeStamp.substring(0, 10);
+        return timeStamp;
+    }
+
     // 随机字符串生成
     public static String getRandomString(int length) { // length表示生成字符串的长度
         String base = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -217,6 +232,7 @@ public class WeiXinController {
     }
 
     //拼接xml 请求路径
+    @SuppressWarnings("rawtypes")
     public static String getRequestXML(SortedMap<Object, Object> parame) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<xml>");
@@ -238,6 +254,7 @@ public class WeiXinController {
     }
 
     //创建md5 数字签证
+    @SuppressWarnings("rawtypes")
     public static String createSign(SortedMap<Object, Object> parame) {
         StringBuffer buffer = new StringBuffer();
         Set set = parame.entrySet();
@@ -267,47 +284,6 @@ public class WeiXinController {
         return "<xml><appid><![CDATA[wx2421b1c4370ec43b]]></appid><attach><![CDATA[支付测试]]></attach><bank_type><![CDATA[CFT]]></bank_type><fee_type><![CDATA[CNY]]></fee_type> <is_subscribe><![CDATA[Y]]></is_subscribe><mch_id><![CDATA[10000100]]></mch_id><nonce_str><![CDATA[5d2b6c2a8db53831f7eda20af46e531c]]></nonce_str><openid><![CDATA[oUpF8uMEb4qRXf22hE3X68TekukE]]></openid> <out_trade_no><![CDATA["
                + orderNum
                + "]]></out_trade_no>  <result_code><![CDATA[SUCCESS]]></result_code> <return_code><![CDATA[SUCCESS]]></return_code><sign><![CDATA[B552ED6B279343CB493C5DD0D78AB241]]></sign><sub_mch_id><![CDATA[10000100]]></sub_mch_id> <time_end><![CDATA[20140903131540]]></time_end><total_fee>1</total_fee><trade_type><![CDATA[JSAPI]]></trade_type><transaction_id><![CDATA[1004400740201409030005092168]]></transaction_id></xml>";
-    }
-
-    public static void main(String[] args) throws Exception {
-        String str = HttpUtil.httpPost("http://localhost:8080/WlsqWS/WeiXinPay/notify",
-            callbakcXml("a313a907f72f4f70b53a46b9773a9d42"));
-        System.out.println("result :" + str);
-        //      SortedMap<Object,Object> parame = new TreeMap<Object,Object>();
-        //      parame.put("appid", "wxdf26629c37f5b7c1");
-        //      parame.put("mch_id", MCHID);
-        //      String randomStr = getRandomString(18).toUpperCase();
-        //      parame.put("nonce_str", randomStr);
-        //      String subject = "余额充值";
-        //      parame.put("body", subject);
-        //      String orderNum = "3a6154e2a662407c8223971284c372a7";
-        //      parame.put("out_trade_no", orderNum);
-        //      String money ="1";
-        //      parame.put("total_fee", money);
-        //      String ip ="127.0.0.1";
-        //      parame.put("spbill_create_ip", ip);
-        //      parame.put("notify_url", NOTIFYURL);
-        //      parame.put("trade_type", TRADETYPE);
-        //      String sign =createSign(parame);
-        //      parame.put("sign", sign);// 数字签证
-        //
-        //      String xml = getRequestXML(parame);
-        //
-        //      String content = HttpUtil.sendPost(UNIFORMORDER, xml);
-        //
-        //      //成功代码
-        //      String result = XmltoJsonUtil.xml2JSON(content);
-        //      JSONObject jsonObject = JSONObject.parseObject(result) ;
-        //      JSONObject results = jsonObject.getJSONObject("xml");
-        //      JSONArray array =  results.getJSONArray("result_code");
-        //      String code = (String)array.get(0);
-        //      System.out.println(results.toString());
-        //      System.out.println(code);
-
-        //失败代码
-        //      String result = XmltoJsonUtil.xml2JSON(content);
-        //      JSONObject jsonObject = JSONObject.parseObject(result) ;
-        //      System.out.println(jsonObject.toString());
     }
 
 }
