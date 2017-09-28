@@ -48,7 +48,20 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.38</version>
         </dependency>
-
+        
+        <!-- 支付宝支付sdk -->
+        <dependency>
+            <groupId>com.alipay</groupId>
+            <artifactId>sdk-java</artifactId>
+            <version>20170725114550</version>
+   		</dependency>
+   		
+   		<!-- 微信支付用到的ssl -->
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>fluent-hc</artifactId>
+		    <version>4.3.4</version>
+		</dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-web -->
         <dependency>
