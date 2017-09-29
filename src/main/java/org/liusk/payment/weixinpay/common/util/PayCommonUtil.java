@@ -33,8 +33,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.liusk.common.utils.Md5;
-import org.liusk.payment.weixinpay.common.constants.WeiXinConfig;
+import org.liusk.payment.weixinpay.config.WeiXinConfig;
 
 import com.alibaba.fastjson.JSONObject;
 

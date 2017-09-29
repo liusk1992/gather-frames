@@ -8,7 +8,7 @@ package org.liusk.payment.weixinpay.common.constants;
  * @author liusk
  * @version $Id: ResultConstants.java, v 0.1 2017年9月28日 下午4:43:57 liusk Exp $
  */
-public class ResultConstants {
+public class WxResultConstants {
 
     /** 处理成功标志 */
     public static final String SUCCESS = "SUCCESS";

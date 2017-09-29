@@ -1,4 +1,4 @@
-﻿package org.liusk.payment.alipay.common.constants;
+﻿package org.liusk.payment.alipay.config;
 
 public class AlipayConfig {
     // 商户appid

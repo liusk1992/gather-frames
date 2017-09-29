@@ -77,8 +77,9 @@ public class WeiXinAppPayController {
                 //订单总价
                 int totalFee = (Integer) data.get("total_fee");
 
-                //TODO 根据订单编码到数据库查询订单信息，比较订单需要支付的金额是否等于totalFee，
-                //等于totalFee，订单支付成功,并修改订单状态为支付成功
+                //TODO 根据订单编码到数据库查询订单信息，首先查看订单状态是否为已支付，如果已支付直接返回不做处理，
+                //如果未支付，比较订单需要支付的金额是否等于totalFee，
+                //如果等于totalFee,修改订单状态为支付成功，如果不等于totalFee说明数据经过篡改不做处理
 
                 //返回给微信结果，不管成功失败，都要返回success：ok，这个只是作为收到微信回调的一个回应
                 response.getWriter().write(PayCommonUtil.setXml("SUCCESS", "OK"));

@@ -1,7 +1,7 @@
 /**
  * BEYONDSOFT.COM INC
  */
-package org.liusk.payment.weixinpay.common.constants;
+package org.liusk.payment.weixinpay.config;
 
 /**
  * 微信基础配置信息
@@ -21,4 +21,7 @@ public class WeiXinConfig {
 
     /** 证书路径 */
     public static final String CERTPATH = "D:/apiclient_cert.p12";
+
+    /** 微信支付回调地址 */
+    public static final String notify_url = "http://www.odc.com/wxPay/notify.do";
 }

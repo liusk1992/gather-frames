@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
-      <module name="gather-frames" target="1.6" />
+      <module name="gather-frames" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

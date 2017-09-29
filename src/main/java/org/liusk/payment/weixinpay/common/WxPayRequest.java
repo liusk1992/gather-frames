@@ -15,12 +15,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.DocumentException;
-import org.liusk.common.utils.HttpUtil;
-import org.liusk.common.utils.XmltoJsonUtil;
-import org.liusk.payment.alipay.common.constants.AlipayConfig;
 import org.liusk.payment.weixinpay.common.constants.PayApi;
-import org.liusk.payment.weixinpay.common.constants.WeiXinConfig;
+import org.liusk.payment.weixinpay.common.util.HttpUtil;
 import org.liusk.payment.weixinpay.common.util.PayCommonUtil;
+import org.liusk.payment.weixinpay.common.util.XmltoJsonUtil;
+import org.liusk.payment.weixinpay.config.WeiXinConfig;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -61,7 +60,7 @@ public class WxPayRequest {
             } else {
                 parame.put("spbill_create_ip", ip);// 消费IP地址
             }
-            parame.put("notify_url", AlipayConfig.notify_url);// 回调地址
+            parame.put("notify_url", WeiXinConfig.notify_url);// 回调地址
             parame.put("trade_type", tradeType);// 交易类型APP
             //获取签名字符串
             String sign = PayCommonUtil.createSign(parame);

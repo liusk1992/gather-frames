@@ -3,9 +3,10 @@
  */
 package org.liusk.payment.alipay.common.utils;
 
+import org.liusk.payment.alipay.config.AlipayConfig;
+
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
-import org.liusk.payment.alipay.common.constants.AlipayConfig;
 
 /**
  * AliPayClient工具类
@@ -18,10 +19,10 @@ public class AliPayClientUtil {
      * 获取默认的AliPayClient
      * @return
      */
-    public static AlipayClient createDefaultAlipayClient(){
-        return  new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID,
-                AlipayConfig.RSA_PRIVATE_KEY, AlipayConfig.FORMAT, AlipayConfig.CHARSET,
-                AlipayConfig.ALIPAY_PUBLIC_KEY, AlipayConfig.SIGNTYPE);
+    public static AlipayClient createDefaultAlipayClient() {
+        return new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID,
+            AlipayConfig.RSA_PRIVATE_KEY, AlipayConfig.FORMAT, AlipayConfig.CHARSET,
+            AlipayConfig.ALIPAY_PUBLIC_KEY, AlipayConfig.SIGNTYPE);
     }
 
 }
