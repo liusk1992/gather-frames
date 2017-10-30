@@ -30,7 +30,7 @@ public class SessionInterceptor implements HandlerInterceptor {
         String urlPath = httpServletRequest.getRequestURI();
         //是否存在session用户,不存在session返回登录页面
         HttpSession session = httpServletRequest.getSession();
-        if (session.getAttribute(UserSessionModel.SESSION_USER_STR) == null) {
+        if (session.getAttribute(UserSessionModel.SESSION_USER_MARK) == null) {
             //获取系统完整路径
             String basePath = httpServletRequest.getScheme() + "://"
                               + httpServletRequest.getServerName() + ":"

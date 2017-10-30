@@ -26,7 +26,7 @@ public class CasConfig {
     @Autowired
     SpringCasAutoconfig autoconfig;
 
-    private static boolean casEnabled = true;
+    private static boolean casEnabled = false;
 
     public CasConfig() {
     }
@@ -55,8 +55,8 @@ public class CasConfig {
     public FilterRegistrationBean logOutFilter() {
         FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
         LogoutFilter logoutFilter = new LogoutFilter(
-                autoconfig.getCasServerUrlPrefix() + "/logout?service=" + autoconfig.getServerName(),
-                new SecurityContextLogoutHandler());
+            autoconfig.getCasServerUrlPrefix() + "/logout?service=" + autoconfig.getServerName(),
+            new SecurityContextLogoutHandler());
         filterRegistration.setFilter(logoutFilter);
         filterRegistration.setEnabled(casEnabled);
         if (autoconfig.getSignOutFilters().size() > 0)
@@ -64,7 +64,7 @@ public class CasConfig {
         else
             filterRegistration.addUrlPatterns("/logout");
         filterRegistration.addInitParameter("casServerUrlPrefix",
-                autoconfig.getCasServerUrlPrefix());
+            autoconfig.getCasServerUrlPrefix());
         filterRegistration.addInitParameter("serverName", autoconfig.getServerName());
         filterRegistration.setOrder(2);
         return filterRegistration;
@@ -83,7 +83,7 @@ public class CasConfig {
         else
             filterRegistration.addUrlPatterns("/*");
         filterRegistration.addInitParameter("casServerUrlPrefix",
-                autoconfig.getCasServerUrlPrefix());
+            autoconfig.getCasServerUrlPrefix());
         filterRegistration.addInitParameter("serverName", autoconfig.getServerName());
         filterRegistration.setOrder(3);
         return filterRegistration;
@@ -106,9 +106,9 @@ public class CasConfig {
         //本项目登录ip+port
         filterRegistration.addInitParameter("serverName", autoconfig.getServerName());
         filterRegistration.addInitParameter("useSession",
-                autoconfig.isUseSession() ? "true" : "false");
+            autoconfig.isUseSession() ? "true" : "false");
         filterRegistration.addInitParameter("redirectAfterValidation",
-                autoconfig.isRedirectAfterValidation() ? "true" : "false");
+            autoconfig.isRedirectAfterValidation() ? "true" : "false");
         filterRegistration.setOrder(4);
         return filterRegistration;
     }
@@ -128,7 +128,7 @@ public class CasConfig {
         else
             filterRegistration.addUrlPatterns("/*");
         filterRegistration.addInitParameter("casServerUrlPrefix",
-                autoconfig.getCasServerUrlPrefix());
+            autoconfig.getCasServerUrlPrefix());
         filterRegistration.addInitParameter("serverName", autoconfig.getServerName());
         filterRegistration.setOrder(5);
         return filterRegistration;
@@ -141,7 +141,7 @@ public class CasConfig {
     public FilterRegistrationBean httpServletRequestWrapperFilter() {
         FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
         filterRegistration.setFilter(new HttpServletRequestWrapperFilter());
-        filterRegistration.setEnabled(true);
+        filterRegistration.setEnabled(casEnabled);
         if (autoconfig.getRequestWrapperFilters().size() > 0)
             filterRegistration.setUrlPatterns(autoconfig.getRequestWrapperFilters());
         else
@@ -159,7 +159,7 @@ public class CasConfig {
     public FilterRegistrationBean assertionThreadLocalFilter() {
         FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
         filterRegistration.setFilter(new AssertionThreadLocalFilter());
-        filterRegistration.setEnabled(true);
+        filterRegistration.setEnabled(casEnabled);
         if (autoconfig.getAssertionFilters().size() > 0)
             filterRegistration.setUrlPatterns(autoconfig.getAssertionFilters());
         else

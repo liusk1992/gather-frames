@@ -13,7 +13,7 @@ public class UserSessionModel implements Serializable {
 
     private static final long serialVersionUID = 6934643699591362316L;
 
-    public static final String SESSION_USER_STR = "session_user";
+    public static final String SESSION_USER_MARK = "session_user";
 
     private String userId;
 

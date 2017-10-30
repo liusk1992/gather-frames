@@ -3,7 +3,14 @@
  */
 package org.liusk.contoller;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URLDecoder;
+
 import org.apache.commons.lang.StringUtils;
+import org.liusk.common.utils.WebUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,9 +24,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/index")
 public class IndexContoller {
 
-    @RequestMapping(value = "/test",method = {RequestMethod.GET,RequestMethod.POST})
+    @RequestMapping(value = "/test", method = { RequestMethod.GET, RequestMethod.POST })
     @ResponseBody
-    public String testIndex(){
+    public String testIndex() throws IOException {
+        String path = WebUtil.getServerPath();
+        String np = URLDecoder.decode(path, "UTF-8");
+        File certs = new File(np + "certs/baofu/bfkey_100024887@@200001044.cer");
+        BufferedReader br = new BufferedReader(new FileReader(certs));
+        String line = null;
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+        System.out.println("--------" + certs.length() + np + "---------");
         return "aaa";
     }
 
