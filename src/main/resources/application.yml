@@ -1,4 +1,5 @@
 spring:
+  profiles: localtest
   cas:
     sign-out-filters: /logout
     auth-filters: /casLogin

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOG_PATTERN"
+              value="[%d{'yy-MM-dd HH:mm:ss,SSS',GMT+8:00}] %-5p [%.10t][%X{CU}] %logger{36}[%L] - %m%n"/>
+    <property name="LOG_CHARSET" value="UTF-8"/>
+
+    <springProperty name="APPLICATION_NAME" source="spring.application.name"/>
+    <springProfile name="localtest">
+        <property name="LOG_HOME" value="D:/logs/${APPLICATION_NAME}"/>
+        <property name="LOG_COMMON_HISTORY" value="1"/>
+        <property name="LOG_ERROR_HISTORY" value="1"/>
+    </springProfile>
+    <springProfile name="prod">
+        <property name="LOG_HOME" value="/home/logs/atesi/${APPLICATION_NAME}"/>
+        <property name="LOG_COMMON_HISTORY" value="5"/>
+        <property name="LOG_ERROR_HISTORY" value="10"/>
+    </springProfile>
+
+    <!--控制台输出-->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>${LOG_CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <appender name="DB" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/db.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/db.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${LOG_COMMON_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <charset>${LOG_CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <logger name="org.apache.ibatis" level="TRACE" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DB"/>
+    </logger>
+    <logger name="java.sql.Connection" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DB"/>
+    </logger>
+    <logger name="java.sql.Statement" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DB"/>
+    </logger>
+    <logger name="java.sql.PreparedStatement" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DB"/>
+    </logger>
+
+    <!--文件输出-->
+    <appender name="COMMON-ROLLING-FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/common.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/common.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${LOG_COMMON_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <charset>${LOG_CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <appender name="ERROR-ROLLING-FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/error.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>${LOG_ERROR_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <charset>${LOG_CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="COMMON-ROLLING-FILE"/>
+        <appender-ref ref="ERROR-ROLLING-FILE"/>
+    </root>
+</configuration>
